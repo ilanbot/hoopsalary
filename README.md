@@ -1,2 +1,0 @@
-# hoopsalary
-NBA salary calculator
