@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NBA Salary Calculator — Player Contract & Earnings Breakdown</title>
+<meta name="description" content="Look up any NBA player's salary and see exactly how much they earn per game, per minute, per point, and more. Free NBA contract calculator.">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1032512233509845" crossorigin="anonymous"></script>
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0a;
+    --surface: #141414;
+    --surface2: #1e1e1e;
+    --border: rgba(255,255,255,0.08);
+    --accent: #f7c948;
+    --accent2: #e05c2a;
+    --text: #f0f0f0;
+    --muted: #888;
+    --font-display: 'Bebas Neue', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* HEADER */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+    position: sticky;
+    top: 0;
+    background: rgba(10,10,10,0.95);
+    backdrop-filter: blur(8px);
+    z-index: 100;
+  }
+  .logo {
+    font-family: var(--font-display);
+    font-size: 26px;
+    letter-spacing: 2px;
+    color: var(--accent);
+  }
+  .logo span { color: var(--text); }
+  .tagline { font-size: 12px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+
+  /* AD SLOT HEADER */
+  .ad-banner {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 90px;
+    color: var(--muted);
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* HERO */
+  .hero {
+    padding: 48px 24px 32px;
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  .hero h1 {
+    font-family: var(--font-display);
+    font-size: clamp(48px, 10vw, 88px);
+    line-height: 0.95;
+    letter-spacing: 3px;
+    margin-bottom: 16px;
+  }
+  .hero h1 em {
+    font-style: normal;
+    color: var(--accent);
+  }
+  .hero p {
+    color: var(--muted);
+    font-size: 15px;
+    max-width: 480px;
+    margin: 0 auto 32px;
+    line-height: 1.6;
+  }
+
+  /* SEARCH */
+  .search-wrap {
+    max-width: 640px;
+    margin: 0 auto;
+    position: relative;
+  }
+  .search-wrap input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 16px 56px 16px 20px;
+    font-family: var(--font-body);
+    font-size: 16px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .search-wrap input:focus { border-color: var(--accent); }
+  .search-wrap input::placeholder { color: var(--muted); }
+  .search-icon {
+    position: absolute;
+    right: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: 18px;
+    pointer-events: none;
+  }
+  .suggestions {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0; right: 0;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    z-index: 50;
+    overflow: hidden;
+    display: none;
+  }
+  .suggestions.show { display: block; }
+  .suggestion-item {
+    padding: 12px 20px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+  .suggestion-item:last-child { border-bottom: none; }
+  .suggestion-item:hover { background: rgba(247,201,72,0.08); }
+  .suggestion-item .team { color: var(--muted); font-size: 12px; }
+
+  /* MAIN CONTENT */
+  main { max-width: 800px; margin: 0 auto; padding: 0 24px 80px; }
+
+  /* POPULAR */
+  .section-title {
+    font-family: var(--font-display);
+    font-size: 22px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    margin: 40px 0 16px;
+    text-transform: uppercase;
+  }
+  .player-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .chip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 8px 14px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: var(--text);
+  }
+  .chip:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* RESULT CARD */
+  #result { margin-top: 40px; display: none; }
+  .player-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 28px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    margin-bottom: 2px;
+  }
+  .player-number {
+    font-family: var(--font-display);
+    font-size: 72px;
+    line-height: 1;
+    color: var(--accent);
+    opacity: 0.25;
+    min-width: 80px;
+  }
+  .player-info h2 {
+    font-family: var(--font-display);
+    font-size: 42px;
+    letter-spacing: 2px;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .player-meta {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .player-meta span {
+    font-size: 12px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .player-meta strong { color: var(--accent); }
+
+  /* SALARY HERO */
+  .salary-hero {
+    background: var(--accent);
+    color: #0a0a0a;
+    padding: 28px;
+    border-radius: 4px;
+    margin-bottom: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .salary-hero .label { font-size: 12px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; opacity: 0.6; margin-bottom: 4px; }
+  .salary-hero .amount { font-family: var(--font-display); font-size: 52px; letter-spacing: 2px; line-height: 1; }
+  .salary-hero .per-day { font-size: 14px; font-weight: 500; opacity: 0.7; }
+
+  /* BREAKDOWN GRID */
+  .breakdown-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 2px;
+    margin-bottom: 2px;
+  }
+  .breakdown-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 20px;
+    border-radius: 4px;
+  }
+  .breakdown-card .b-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .breakdown-card .b-value { font-family: var(--font-display); font-size: 28px; color: var(--accent); letter-spacing: 1px; }
+  .breakdown-card .b-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  /* CONTRACT TABLE */
+  .contract-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 2px;
+  }
+  .contract-section h3 {
+    font-family: var(--font-display);
+    font-size: 18px;
+    letter-spacing: 2px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    color: var(--muted);
+  }
+  table { width: 100%; border-collapse: collapse; }
+  th { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; padding: 10px 20px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 12px 20px; font-size: 14px; border-bottom: 1px solid var(--border); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  .current-year td { color: var(--accent); }
+  .guaranteed { color: #4caf82; font-size: 11px; font-weight: 600; text-transform: uppercase; }
+  .not-guaranteed { color: var(--muted); font-size: 11px; text-transform: uppercase; }
+
+  /* COMPARE */
+  .compare-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 20px;
+    margin-bottom: 2px;
+  }
+  .compare-section h3 { font-family: var(--font-display); font-size: 18px; letter-spacing: 2px; color: var(--muted); margin-bottom: 16px; }
+  .compare-input-row { display: flex; gap: 8px; }
+  .compare-input-row input {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 10px 14px;
+    font-family: var(--font-body);
+    font-size: 14px;
+    color: var(--text);
+    outline: none;
+  }
+  .compare-input-row input:focus { border-color: var(--accent); }
+  .compare-btn {
+    background: var(--accent);
+    color: #0a0a0a;
+    border: none;
+    border-radius: 4px;
+    padding: 10px 20px;
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  #compare-result { margin-top: 16px; display: none; }
+  .compare-bars { display: flex; flex-direction: column; gap: 12px; }
+  .compare-bar-row { display: flex; align-items: center; gap: 12px; }
+  .compare-bar-name { font-size: 13px; width: 140px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bar-track { flex: 1; background: var(--surface2); border-radius: 2px; height: 28px; overflow: hidden; position: relative; }
+  .bar-fill { height: 100%; border-radius: 2px; display: flex; align-items: center; padding: 0 10px; font-size: 12px; font-weight: 600; color: #0a0a0a; transition: width 0.6s cubic-bezier(.4,0,.2,1); }
+  .bar-p1 { background: var(--accent); }
+  .bar-p2 { background: var(--accent2); }
+
+  /* AD SLOT MID */
+  .ad-mid {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 120px;
+    color: var(--muted);
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin: 20px 0;
+  }
+
+  /* FUN FACTS */
+  .facts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2px;
+  }
+  .fact-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 20px;
+  }
+  .fact-card .f-icon { font-size: 24px; margin-bottom: 8px; }
+  .fact-card .f-value { font-family: var(--font-display); font-size: 24px; color: var(--accent); margin-bottom: 4px; }
+  .fact-card .f-label { font-size: 12px; color: var(--muted); }
+
+  /* NOT FOUND */
+  .not-found {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--muted);
+  }
+  .not-found h3 { font-family: var(--font-display); font-size: 32px; color: var(--text); margin-bottom: 8px; }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 24px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  @media (max-width: 500px) {
+    .player-header { flex-direction: column; }
+    .player-number { font-size: 48px; }
+    .salary-hero .amount { font-size: 36px; }
+    .compare-input-row { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">HOOP<span>SALARY</span></div>
+  <div class="tagline">NBA Contract Database</div>
+</header>
+
+<!-- AD BANNER TOP — replace with real AdSense unit -->
+<div class="ad-banner">
+  Advertisement
+  <!-- <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXX" data-ad-slot="XXXX" data-ad-format="auto"></ins> -->
+</div>
+
+<div class="hero">
+  <h1>HOW MUCH DO THEY <em>REALLY</em> MAKE?</h1>
+  <p>Look up any NBA player's salary and see the full breakdown — per game, per minute, per point, and more.</p>
+  <div class="search-wrap">
+    <input type="text" id="search-input" placeholder="Search player name... (e.g. LeBron James)" autocomplete="off">
+    <span class="search-icon">⌕</span>
+    <div class="suggestions" id="suggestions"></div>
+  </div>
+</div>
+
+<main>
+  <div class="section-title">Popular Players</div>
+  <div class="player-chips" id="chips"></div>
+
+  <div id="result"></div>
+
+  <!-- AD SLOT MID PAGE -->
+  <div class="ad-mid">Advertisement</div>
+
+  <div class="section-title" style="margin-top:0;">How It Works</div>
+  <div class="breakdown-grid">
+    <div class="breakdown-card">
+      <div class="b-label">Step 1</div>
+      <div class="b-value" style="font-size:18px; color: var(--text);">Search</div>
+      <div class="b-sub">Type any NBA player's name in the search bar above</div>
+    </div>
+    <div class="breakdown-card">
+      <div class="b-label">Step 2</div>
+      <div class="b-value" style="font-size:18px; color: var(--text);">Explore</div>
+      <div class="b-sub">See full contract details, per-game earnings & fun breakdowns</div>
+    </div>
+    <div class="breakdown-card">
+      <div class="b-label">Step 3</div>
+      <div class="b-value" style="font-size:18px; color: var(--text);">Compare</div>
+      <div class="b-sub">Compare any two players' contracts side by side</div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  © 2025 HoopSalary · Salary data updated for 2024–25 NBA season · For entertainment purposes
+</footer>
+
+<script>
+const PLAYERS = [
+  { name: "LeBron James", team: "Los Angeles Lakers", pos: "SF", number: 23, salary: 47607350, years: 2, ppg: 25.1, mpg: 34.6, gpg: 71, contract: [{year:"2024-25",sal:47607350,g:true},{year:"2025-26",sal:50034717,g:true}] },
+  { name: "Stephen Curry", team: "Golden State Warriors", pos: "PG", number: 30, salary: 55761217, years: 1, ppg: 26.4, mpg: 32.5, gpg: 74, contract: [{year:"2024-25",sal:55761217,g:true}] },
+  { name: "Kevin Durant", team: "Phoenix Suns", pos: "SF", number: 35, salary: 51179021, years: 3, ppg: 27.3, mpg: 35.2, gpg: 68, contract: [{year:"2024-25",sal:51179021,g:true},{year:"2025-26",sal:54438902,g:true},{year:"2026-27",sal:57698783,g:false}] },
+  { name: "Nikola Jokic", team: "Denver Nuggets", pos: "C", number: 15, salary: 51415938, years: 4, ppg: 26.4, mpg: 33.9, gpg: 79, contract: [{year:"2024-25",sal:51415938,g:true},{year:"2025-26",sal:56576562,g:true},{year:"2026-27",sal:61737186,g:true},{year:"2027-28",sal:66897810,g:true}] },
+  { name: "Giannis Antetokounmpo", team: "Milwaukee Bucks", pos: "PF", number: 34, salary: 48787676, years: 3, ppg: 30.4, mpg: 35.0, gpg: 73, contract: [{year:"2024-25",sal:48787676,g:true},{year:"2025-26",sal:52563702,g:true},{year:"2026-27",sal:56339728,g:true}] },
+  { name: "Joel Embiid", team: "Philadelphia 76ers", pos: "C", number: 21, salary: 51415938, years: 4, ppg: 34.7, mpg: 33.6, gpg: 39, contract: [{year:"2024-25",sal:51415938,g:true},{year:"2025-26",sal:55575562,g:true},{year:"2026-27",sal:59735186,g:true},{year:"2027-28",sal:63894810,g:true}] },
+  { name: "Luka Doncic", team: "Dallas Mavericks", pos: "PG", number: 77, salary: 43031688, years: 4, ppg: 33.9, mpg: 36.2, gpg: 70, contract: [{year:"2024-25",sal:43031688,g:true},{year:"2025-26",sal:46445500,g:true},{year:"2026-27",sal:49859312,g:true},{year:"2027-28",sal:53273124,g:true}] },
+  { name: "Jayson Tatum", team: "Boston Celtics", pos: "SF", number: 0, salary: 32600060, years: 5, ppg: 26.9, mpg: 36.5, gpg: 74, contract: [{year:"2024-25",sal:32600060,g:true},{year:"2025-26",sal:35654240,g:true},{year:"2026-27",sal:38708420,g:true},{year:"2027-28",sal:41762600,g:true},{year:"2028-29",sal:44816780,g:true}] },
+  { name: "Damian Lillard", team: "Milwaukee Bucks", pos: "PG", number: 0, salary: 48787676, years: 2, ppg: 24.3, mpg: 35.1, gpg: 73, contract: [{year:"2024-25",sal:48787676,g:true},{year:"2025-26",sal:52563702,g:true}] },
+  { name: "Anthony Edwards", team: "Minnesota Timberwolves", pos: "SG", number: 5, salary: 43031688, years: 5, ppg: 25.9, mpg: 35.1, gpg: 79, contract: [{year:"2024-25",sal:43031688,g:true},{year:"2025-26",sal:46445500,g:true},{year:"2026-27",sal:49859312,g:true},{year:"2027-28",sal:53273124,g:true},{year:"2028-29",sal:56686936,g:true}] },
+  { name: "Victor Wembanyama", team: "San Antonio Spurs", pos: "C", number: 1, salary: 12156729, years: 4, ppg: 21.4, mpg: 29.7, gpg: 71, contract: [{year:"2024-25",sal:12156729,g:true},{year:"2025-26",sal:12769565,g:true},{year:"2026-27",sal:13382401,g:false},{year:"2027-28",sal:13995237,g:false}] },
+  { name: "Shai Gilgeous-Alexander", team: "Oklahoma City Thunder", pos: "PG", number: 2, salary: 33392350, years: 5, ppg: 30.1, mpg: 33.4, gpg: 75, contract: [{year:"2024-25",sal:33392350,g:true},{year:"2025-26",sal:36482000,g:true},{year:"2026-27",sal:39571650,g:true},{year:"2027-28",sal:42661300,g:true},{year:"2028-29",sal:45750950,g:true}] },
+  { name: "Devin Booker", team: "Phoenix Suns", pos: "SG", number: 1, salary: 36016200, years: 3, ppg: 27.1, mpg: 34.8, gpg: 68, contract: [{year:"2024-25",sal:36016200,g:true},{year:"2025-26",sal:39577050,g:true},{year:"2026-27",sal:43137900,g:true}] },
+  { name: "Jimmy Butler", team: "Miami Heat", pos: "SF", number: 22, salary: 48787676, years: 2, ppg: 21.4, mpg: 32.8, gpg: 60, contract: [{year:"2024-25",sal:48787676,g:true},{year:"2025-26",sal:52563702,g:false}] },
+  { name: "Trae Young", team: "Atlanta Hawks", pos: "PG", number: 11, salary: 43031688, years: 3, ppg: 25.7, mpg: 33.5, gpg: 78, contract: [{year:"2024-25",sal:43031688,g:true},{year:"2025-26",sal:46445500,g:true},{year:"2026-27",sal:49859312,g:true}] },
+];
+
+function fmt(n) { return '$' + Math.round(n).toLocaleString(); }
+function fmtM(n) { return '$' + (n/1000000).toFixed(1) + 'M'; }
+
+// Chips
+const chipsEl = document.getElementById('chips');
+PLAYERS.slice(0,8).forEach(p => {
+  const c = document.createElement('button');
+  c.className = 'chip';
+  c.textContent = p.name;
+  c.onclick = () => showPlayer(p);
+  chipsEl.appendChild(c);
+});
+
+// Search
+const input = document.getElementById('search-input');
+const sugg = document.getElementById('suggestions');
+
+input.addEventListener('input', () => {
+  const q = input.value.toLowerCase().trim();
+  if (q.length < 2) { sugg.classList.remove('show'); return; }
+  const matches = PLAYERS.filter(p => p.name.toLowerCase().includes(q)).slice(0,5);
+  if (!matches.length) { sugg.classList.remove('show'); return; }
+  sugg.innerHTML = matches.map(p => `
+    <div class="suggestion-item" onclick="pickPlayer('${p.name}')">
+      <div>
+        <div>${p.name}</div>
+        <div class="team">${p.team} · ${p.pos}</div>
+      </div>
+    </div>
+  `).join('');
+  sugg.classList.add('show');
+});
+
+document.addEventListener('click', e => { if (!e.target.closest('.search-wrap')) sugg.classList.remove('show'); });
+
+window.pickPlayer = (name) => {
+  const p = PLAYERS.find(x => x.name === name);
+  if (p) { showPlayer(p); input.value = p.name; sugg.classList.remove('show'); }
+};
+
+function showPlayer(p) {
+  const perGame = p.salary / p.gpg;
+  const perMin = perGame / p.mpg;
+  const perPoint = perGame / p.ppg;
+  const perDay = p.salary / 365;
+  const perHour = perDay / 24;
+  const totalContract = p.contract.reduce((s,c)=>s+c.sal,0);
+
+  const resultEl = document.getElementById('result');
+  resultEl.style.display = 'block';
+  resultEl.innerHTML = `
+    <div class="player-header">
+      <div class="player-number">#${p.number}</div>
+      <div class="player-info">
+        <h2>${p.name}</h2>
+        <div class="player-meta">
+          <span>${p.team}</span>
+          <span>·</span>
+          <span>${p.pos}</span>
+          <span>·</span>
+          <span>Contract: <strong>${p.years} yr${p.years>1?'s':''}</strong></span>
+          <span>·</span>
+          <span>Total value: <strong>${fmtM(totalContract)}</strong></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="salary-hero">
+      <div>
+        <div class="label">2024–25 Annual Salary</div>
+        <div class="amount">${fmtM(p.salary)}</div>
+        <div class="per-day">${fmt(Math.round(perDay))} per day · ${fmt(Math.round(perHour))} per hour</div>
+      </div>
+    </div>
+
+    <div class="breakdown-grid">
+      <div class="breakdown-card">
+        <div class="b-label">Per Game</div>
+        <div class="b-value">${fmtM(perGame)}</div>
+        <div class="b-sub">Based on ${p.gpg} games</div>
+      </div>
+      <div class="breakdown-card">
+        <div class="b-label">Per Minute</div>
+        <div class="b-value">${fmt(Math.round(perMin))}</div>
+        <div class="b-sub">${p.mpg} min/game avg</div>
+      </div>
+      <div class="breakdown-card">
+        <div class="b-label">Per Point</div>
+        <div class="b-value">${fmt(Math.round(perPoint))}</div>
+        <div class="b-sub">${p.ppg} PPG avg</div>
+      </div>
+      <div class="breakdown-card">
+        <div class="b-label">Per Second</div>
+        <div class="b-value">${(p.salary/365/24/3600).toFixed(2)}</div>
+        <div class="b-sub">Dollars every second</div>
+      </div>
+    </div>
+
+    <div class="contract-section">
+      <h3>FULL CONTRACT BREAKDOWN</h3>
+      <table>
+        <thead><tr><th>Season</th><th>Salary</th><th>Status</th></tr></thead>
+        <tbody>
+          ${p.contract.map((c,i)=>`
+            <tr class="${i===0?'current-year':''}">
+              <td>${c.year}${i===0?' <span style="font-size:11px;color:var(--accent);font-weight:600;">CURRENT</span>':''}</td>
+              <td>${fmtM(c.sal)}</td>
+              <td><span class="${c.g?'guaranteed':'not-guaranteed'}">${c.g?'✓ Guaranteed':'Option'}</span></td>
+            </tr>
+          `).join('')}
+          <tr style="border-top: 1px solid var(--border)">
+            <td style="color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:1px;">Total</td>
+            <td style="font-weight:600;">${fmtM(totalContract)}</td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="facts-grid">
+      <div class="fact-card">
+        <div class="f-icon">🏠</div>
+        <div class="f-value">${Math.round(p.salary / 300000)}</div>
+        <div class="f-label">Average US homes their salary could buy</div>
+      </div>
+      <div class="fact-card">
+        <div class="f-icon">🎓</div>
+        <div class="f-value">${Math.round(p.salary / 35000)}</div>
+        <div class="f-label">Years of average US college tuition covered</div>
+      </div>
+      <div class="fact-card">
+        <div class="f-icon">🚗</div>
+        <div class="f-value">${Math.round(p.salary / 48000)}</div>
+        <div class="f-label">Average new cars they could buy</div>
+      </div>
+      <div class="fact-card">
+        <div class="f-icon">☕</div>
+        <div class="f-value">${Math.round(p.salary / 6).toLocaleString()}</div>
+        <div class="f-label">Cups of coffee their annual salary could buy</div>
+      </div>
+    </div>
+
+    <div class="compare-section" style="margin-top:2px;">
+      <h3>COMPARE WITH ANOTHER PLAYER</h3>
+      <div class="compare-input-row">
+        <input type="text" id="compare-input" placeholder="Type a player name to compare..." autocomplete="off">
+        <button class="compare-btn" onclick="doCompare('${p.name}')">Compare</button>
+      </div>
+      <div id="compare-result"></div>
+    </div>
+  `;
+
+  resultEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+window.doCompare = (p1name) => {
+  const input2 = document.getElementById('compare-input').value.trim().toLowerCase();
+  const p1 = PLAYERS.find(x => x.name === p1name);
+  const p2 = PLAYERS.find(x => x.name.toLowerCase().includes(input2));
+  const cr = document.getElementById('compare-result');
+  if (!p2) { cr.style.display='block'; cr.innerHTML='<p style="color:var(--muted);font-size:13px;margin-top:12px;">Player not found. Try: LeBron James, Curry, Durant, Jokic...</p>'; return; }
+  if (p1.name === p2.name) { cr.style.display='block'; cr.innerHTML='<p style="color:var(--muted);font-size:13px;margin-top:12px;">Choose a different player to compare.</p>'; return; }
+  const max = Math.max(p1.salary, p2.salary);
+  const w1 = Math.round((p1.salary/max)*100);
+  const w2 = Math.round((p2.salary/max)*100);
+  cr.style.display='block';
+  cr.innerHTML = `
+    <div class="compare-bars" style="margin-top:16px;">
+      <div class="compare-bar-row">
+        <div class="compare-bar-name">${p1.name}</div>
+        <div class="bar-track"><div class="bar-fill bar-p1" style="width:${w1}%">${fmtM(p1.salary)}</div></div>
+      </div>
+      <div class="compare-bar-row">
+        <div class="compare-bar-name">${p2.name}</div>
+        <div class="bar-track"><div class="bar-fill bar-p2" style="width:${w2}%">${fmtM(p2.salary)}</div></div>
+      </div>
+    </div>
+    <p style="margin-top:14px;font-size:13px;color:var(--muted);">
+      ${p1.salary > p2.salary
+        ? `${p1.name} earns ${fmtM(p1.salary - p2.salary)} more per year than ${p2.name}.`
+        : p2.salary > p1.salary
+        ? `${p2.name} earns ${fmtM(p2.salary - p1.salary)} more per year than ${p1.name}.`
+        : `Both players earn the same salary.`}
+    </p>
+  `;
+};
+</script>
+</body>
+</html>
